@@ -1,9 +1,11 @@
+'use client'
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { RealtimeCursors } from '@/components/realtime-cursors'
 import { RealtimeChat } from '@/components/realtime-chat'
 import { RealtimeAvatarStack } from '@/components/realtime-avatar-stack'
 import { LatencyIndicator } from '@/components/latency-indicator'
 import { nanoid } from 'nanoid'
+import { useState } from "react";
 
 const generateRandomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 100%, 70%)`
 
@@ -28,8 +30,8 @@ function IconMenuRealtime({ width = "16", height = "16", className = "" }) {
 }
 
 export default function Home() {
-  const color = generateRandomColor()
-  const userId = nanoid()
+  const [color] = useState(() => generateRandomColor())
+  const [userId] = useState(() => nanoid())
 
   return (
     <div
