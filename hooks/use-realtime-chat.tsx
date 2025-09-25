@@ -29,7 +29,7 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
  const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    const config = { private: true, broadcast: { replay: { since: twelveHoursAgo } } }
+    const config = { private: true, broadcast: { replay: { since: twelveHoursAgo, limit: 10 } } }
     // @ts-ignore
     const newChannel = supabase.channel(roomName, { config })
 

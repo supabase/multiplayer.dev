@@ -102,7 +102,7 @@ export const RealtimeChat = ({
       {/* Messages */}
       <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         <div className="space-y-1">
-          {allMessages.map((message, index) => {
+          {allMessages.slice(-10).map((message, index) => {
             const prevMessage = index > 0 ? allMessages[index - 1] : null
             const showHeader = !prevMessage || prevMessage.username !== message.username
 
