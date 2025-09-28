@@ -30,7 +30,7 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
             message.replayed ? 'opacity-50' : ''
           )}
         >
-          {message.content}
+          {(message.content?? '').slice(0, 100)}
         </div>
       </div>
     </div>
