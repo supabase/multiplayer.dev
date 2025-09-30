@@ -85,7 +85,10 @@ export const RealtimeChat = ({
   useEffect(() => {
     const handleKeyDown = (e : KeyboardEvent) => {
       if (e.key === "Enter" && document.activeElement !== inputRef.current) {
+        e.preventDefault(); // Prevent form submit
         inputRef?.current?.focus();
+      } else if (e.key === "Escape" && document.activeElement === inputRef.current) {
+        inputRef?.current?.blur();
       }
     };
 
