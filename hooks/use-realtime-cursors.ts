@@ -65,6 +65,7 @@ export const useRealtimeCursors = ({
 }) => {
   const [userId] = useState(nanoid())
   const [cursors, setCursors] = useState<Record<string, CursorEventPayload>>({})
+  const cursorPayload = useRef<CursorEventPayload | null>(null)
 
   const channelRef = useRef<RealtimeChannel | null>(null)
 
@@ -83,6 +84,8 @@ export const useRealtimeCursors = ({
         color: color,
         timestamp: new Date().getTime(),
       }
+
+      cursorPayload.current = payload
 
       channelRef.current?.send({
         type: 'broadcast',
@@ -111,6 +114,15 @@ export const useRealtimeCursors = ({
 
             return {...prev}
           })
+        })
+      })
+      .on('presence', { event: 'join' }, () => {
+        if (!cursorPayload.current) return
+
+        channelRef.current?.send({
+          type: 'broadcast',
+          event: EVENT_NAME,
+          payload: cursorPayload.current,
         })
       })
       .on('broadcast', { event: EVENT_NAME }, (data: { payload: CursorEventPayload }) => {
