@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { RealtimeChannel } from '@supabase/supabase-js'
+import { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { nanoid } from 'nanoid'
 
@@ -142,13 +142,19 @@ export const useRealtimeCursors = ({
         })
       })
     .subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        const status = await channel.track({ key: userId, color: color })
+      console.log("Subscribe callback", status)
+
+      if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
+        await channel.track({ key: userId, color: color })
         window.addEventListener('mousemove', handleMouseMove)
+      } else {
+        setCursors({})
+        window.removeEventListener('mousemove', handleMouseMove)
       }
     })
 
     return () => {
+      setCursors({})
       window.removeEventListener('mousemove', handleMouseMove)
       channel.unsubscribe()
     }

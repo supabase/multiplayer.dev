@@ -38,6 +38,9 @@ export const useRealtimeLatencyRoom = (id : string) => {
               setLatency(newLatency)
             }
           }, 2000)
+        } else {
+          clearInterval(pingIntervalId)
+          setLatency(0)
         }
       })
   }, [])

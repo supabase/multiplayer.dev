@@ -42,6 +42,8 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           setIsConnected(true)
+        } else {
+          setIsConnected(false)
         }
       })
 
@@ -49,6 +51,7 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
 
     return () => {
       supabase.removeChannel(newChannel)
+      setIsConnected(false)
     }
   }, [roomName, username, supabase])
 

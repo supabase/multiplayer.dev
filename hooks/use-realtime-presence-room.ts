@@ -34,6 +34,7 @@ export const useRealtimePresenceRoom = (roomName: string, currentUserColor: stri
       })
       .subscribe(async (status) => {
         if (status !== 'SUBSCRIBED') {
+          setUsers({})
           return
         }
 
