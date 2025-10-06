@@ -30,13 +30,12 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
 
   useEffect(() => {
     const config = { private: true, broadcast: { replay: { since: twelveHoursAgo, limit: 10 } } }
-    // @ts-ignore
     const newChannel = supabase.channel(roomName, { config })
 
     newChannel
       .on('broadcast', { event: EVENT_MESSAGE_TYPE }, (payload) => {
         const chatMessage = payload.payload as ChatMessage
-        chatMessage.replayed = payload?.meta?.replayed
+        chatMessage.replayed = payload?.meta?.replayed ?? false
         setMessages((current) => [...current, chatMessage])
       })
       .subscribe(async (status) => {
