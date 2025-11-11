@@ -1,8 +1,12 @@
 import { createBrowserClient } from "@supabase/ssr";
 
 export function createClient() {
-  // Randomly pick between '1.0.0' and '2.0.0'
-  const vsn = Math.random() < 0.5 ? '1.0.0' : '2.0.0';
+  // Check for vsn query parameter first
+  const urlParams = new URLSearchParams(window.location.search);
+  const vsnParam = urlParams.get('vsn');
+  
+  // Use query param if provided, otherwise randomly pick between '1.0.0' and '2.0.0'
+  const vsn = vsnParam || (Math.random() < 0.5 ? '1.0.0' : '2.0.0');
 
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
