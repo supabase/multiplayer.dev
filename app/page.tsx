@@ -6,6 +6,7 @@ import { RealtimeAvatarStack } from '@/components/realtime-avatar-stack'
 import { LatencyIndicator } from '@/components/latency-indicator'
 import { nanoid } from 'nanoid'
 import { useState } from "react";
+import { Github } from 'lucide-react';
 
 const generateRandomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 100%, 70%)`
 
@@ -58,6 +59,7 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             <LatencyIndicator/>
             <ThemeSwitcher />
+            <a href="https://github.com/supabase/multiplayer.dev" title="Fork me on GitHub"><Github /></a>
           </div>
           <div className="flex justify-end">
           <RealtimeChat roomName="chat-room" username={userId} />
