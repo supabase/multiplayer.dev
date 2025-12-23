@@ -1,11 +1,17 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { useRealtimeLatencyRoom } from '@/hooks/use-realtime-latency-room'
-import { nanoid } from 'nanoid'
+import { useRealtimeLatency } from '@/hooks/use-realtime-latency'
 
 export const LatencyIndicator = () => {
-  const { latency } = useRealtimeLatencyRoom(nanoid())
+  const { latency, status } = useRealtimeLatency()
 
-  return <Badge>Latency: {latency.toFixed(0)}ms</Badge>
+  const variant = status === 'connected' ? 'default' : status === 'error' ? 'destructive' : 'secondary'
+  const latencyDisplay = latency > 0 ? `${latency.toFixed(0)}ms` : '...'
+
+  return (
+    <Badge variant={variant}>
+      {status === 'connected' ? `Latency: ${latencyDisplay}` : status}
+    </Badge>
+  )
 }
