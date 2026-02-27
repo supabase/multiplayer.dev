@@ -1,8 +1,15 @@
-name: Update Supabase JS
+name: Update Supabase Package
 
 on:
   workflow_dispatch:
     inputs:
+      package:
+        description: "Package to update"
+        required: true
+        type: choice
+        options:
+          - supabase-js
+          - ssr
       version:
         description: "Version to update to"
         required: true
@@ -18,7 +25,7 @@ permissions:
   contents: write
 
 jobs:
-  update-supabase-js:
+  update-supabase-package:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,8 +39,8 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: Update @supabase/*-js packages
-        run: npm i @supabase/supabase-js@${{ github.event.inputs.version }}
+      - name: Update @supabase/${{ inputs.package }} package
+        run: npm i @supabase/${{ inputs.package }}@${{ inputs.version }}
 
       - name: Generate token
         id: app-token
@@ -46,16 +53,16 @@ jobs:
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
         with:
           token: ${{ steps.app-token.outputs.token }}
-          commit-message: "feat: update @supabase/*-js to v${{ github.event.inputs.version }}"
-          title: "feat: update @supabase/*-js to v${{ github.event.inputs.version }}"
+          commit-message: "feat: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
+          title: "feat: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
           body: |
-            This PR updates @supabase/*-js to version ${{ github.event.inputs.version }}.
+            This PR updates @supabase/${{ inputs.package }} to version ${{ inputs.version }}.
 
-            **Source**: ${{ github.event.inputs.source }}
+            **Source**: ${{ inputs.source }}
 
             **Changes**:
-            - Updated @supabase/supabase-js to ${{ github.event.inputs.version }}
+            - Updated @supabase/${{ inputs.package }} to ${{ inputs.version }}
 
             This PR was created automatically.
-          branch: "gha/auto-update-supabase-js-v${{ github.event.inputs.version }}"
+          branch: "gha/auto-update-supabase-${{ inputs.package }}-v${{ inputs.version }}"
           base: "main"
