@@ -1,0 +1,68 @@
+name: Update Supabase Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Package to update"
+        required: true
+        type: choice
+        options:
+          - supabase-js
+          - ssr
+      version:
+        description: "Version to update to"
+        required: true
+        type: string
+      source:
+        description: "Source of the update"
+        required: false
+        type: string
+        default: "manual"
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  update-supabase-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Update @supabase/${{ inputs.package }} package
+        run: npm i @supabase/${{ inputs.package }}@${{ inputs.version }}
+
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ secrets.GH_AUTOFIX_APP_ID }}
+          private-key: ${{ secrets.GH_AUTOFIX_PRIVATE_KEY }}
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          commit-message: "feat: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
+          title: "feat: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
+          body: |
+            This PR updates @supabase/${{ inputs.package }} to version ${{ inputs.version }}.
+
+            **Source**: ${{ inputs.source }}
+
+            **Changes**:
+            - Updated @supabase/${{ inputs.package }} to ${{ inputs.version }}
+
+            This PR was created automatically.
+          branch: "gha/auto-update-supabase-${{ inputs.package }}-v${{ inputs.version }}"
+          base: "main"
