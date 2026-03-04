@@ -21,17 +21,20 @@ on:
         default: "manual"
 
 permissions:
-  pull-requests: write
-  contents: write
+  pull-requests: read
+  contents: read
 
 jobs:
   update-supabase-package:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-supabase-update-${{ inputs.version }}
+      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
-          ref: main
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
@@ -40,7 +43,9 @@ jobs:
           cache: "npm"
 
       - name: Update @supabase/${{ inputs.package }} package
-        run: npm i @supabase/${{ inputs.package }}@${{ inputs.version }}
+        run: |
+          npm pkg set 'dependencies["@supabase/${{ inputs.package }}"]'="${{ inputs.version }}"
+          npm install --package-lock-only --ignore-scripts
 
       - name: Generate token
         id: app-token
@@ -53,8 +58,8 @@ jobs:
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
         with:
           token: ${{ steps.app-token.outputs.token }}
-          commit-message: "feat: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
-          title: "feat: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
+          commit-message: "chore: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
+          title: "chore: update @supabase/${{ inputs.package }} to v${{ inputs.version }}"
           body: |
             This PR updates @supabase/${{ inputs.package }} to version ${{ inputs.version }}.
 
@@ -65,4 +70,4 @@ jobs:
 
             This PR was created automatically.
           branch: "gha/auto-update-supabase-${{ inputs.package }}-v${{ inputs.version }}"
-          base: "main"
+          base: ${{ github.event.repository.default_branch }}
