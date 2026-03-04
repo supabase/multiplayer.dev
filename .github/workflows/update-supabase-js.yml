@@ -44,7 +44,7 @@ jobs:
 
       - name: Update @supabase/${{ inputs.package }} package
         run: |
-          npm pkg set 'dependencies["@supabase/${{ inputs.package }}"]'="${{ inputs.version }}"
+          npm pkg set "dependencies.@supabase/${{ inputs.package }}=${{ inputs.version }}"
           npm install --package-lock-only --ignore-scripts
 
       - name: Generate token
