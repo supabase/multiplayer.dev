@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import { containsProfanity } from '@/lib/profanity-filter'
 
 interface RealtimeChatProps {
   roomName: string
@@ -73,6 +74,11 @@ export const RealtimeChat = ({
     (e: React.FormEvent) => {
       e.preventDefault()
       if (!newMessage.trim() || !isConnected) return
+
+      if (containsProfanity(newMessage)) {
+        setNewMessage('')
+        return
+      }
 
       sendMessage(newMessage)
       setNewMessage('')
