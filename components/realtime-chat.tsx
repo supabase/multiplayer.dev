@@ -2,6 +2,8 @@
 
 import { cn } from '@/lib/utils'
 import { ChatMessageItem } from '@/components/chat-message'
+import { EmojiPicker } from '@/components/emoji-picker'
+import { FloatingReactions } from '@/components/floating-reactions'
 import { useChatScroll } from '@/hooks/use-chat-scroll'
 import {
   type ChatMessage,
@@ -40,6 +42,9 @@ export const RealtimeChat = ({
     messages: realtimeMessages,
     sendMessage,
     isConnected,
+    reactions,
+    sendEmoji,
+    isBinaryCapable,
   } = useRealtimeChat({
     roomName,
     username,
@@ -109,7 +114,7 @@ export const RealtimeChat = ({
   return (
     <div className="flex flex-col max-h-1/2 max-w-[400px] bg-background text-foreground antialiased overflow-y-scroll break-all">
       {/* Messages */}
-      <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={containerRef} className="relative flex-1 overflow-y-auto p-4 space-y-4">
         <div className="space-y-1">
           {allMessages.slice(-10).map((message, index) => {
             const prevMessage = index > 0 ? allMessages[index - 1] : null
@@ -129,7 +134,10 @@ export const RealtimeChat = ({
             )
           })}
         </div>
+        <FloatingReactions reactions={reactions} />
       </div>
+
+      {isBinaryCapable && <EmojiPicker onPick={sendEmoji} disabled={!isConnected} />}
 
       <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-t border-border p-4">
       {isConnected && (
