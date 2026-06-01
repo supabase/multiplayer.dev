@@ -1,7 +1,8 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useCallback, useEffect, useState } from 'react'
+import { EMOJIS } from '@/lib/emojis'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface UseRealtimeChatProps {
   roomName: string
@@ -16,17 +17,37 @@ export interface ChatMessage {
   replayed: boolean
 }
 
+export interface Reaction {
+  id: string
+  index: number
+  createdAt: number
+}
+
 const EVENT_MESSAGE_TYPE = 'message'
+const EVENT_EMOJI_TYPE = 'emoji'
+const REACTION_TTL_MS = 2500
 
 export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
   const supabase = createClient()
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [reactions, setReactions] = useState<Reaction[]>([])
   const [channel, setChannel] = useState<ReturnType<typeof supabase.channel> | null>(null)
 
   const twelveHours = 12 * 60 * 60 * 1000
   const twelveHoursAgo = Date.now() - twelveHours
 
  const [isConnected, setIsConnected] = useState(false)
+
+  const reactionTimeouts = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+
+  const pushReaction = useCallback((reaction: Reaction) => {
+    setReactions((current) => [...current, reaction])
+    const timeout = setTimeout(() => {
+      setReactions((current) => current.filter((r) => r.id !== reaction.id))
+      reactionTimeouts.current.delete(reaction.id)
+    }, REACTION_TTL_MS)
+    reactionTimeouts.current.set(reaction.id, timeout)
+  }, [])
 
   useEffect(() => {
     const config = { private: true, broadcast: { replay: { since: twelveHoursAgo, limit: 10 } } }
@@ -37,6 +58,13 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
         const chatMessage = payload.payload as ChatMessage
         chatMessage.replayed = payload?.meta?.replayed ?? false
         setMessages((current) => [...current, chatMessage])
+      })
+      .on('broadcast', { event: EVENT_EMOJI_TYPE }, (payload) => {
+        const buf = payload.payload as ArrayBuffer
+        if (!(buf instanceof ArrayBuffer) || buf.byteLength < 1) return
+        const index = new Uint8Array(buf)[0]
+        if (index >= EMOJIS.length) return
+        pushReaction({ id: crypto.randomUUID(), index, createdAt: Date.now() })
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -51,6 +79,8 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
     return () => {
       supabase.removeChannel(newChannel)
       setIsConnected(false)
+      reactionTimeouts.current.forEach((t) => clearTimeout(t))
+      reactionTimeouts.current.clear()
     }
   }, [roomName, username, supabase])
 
@@ -81,5 +111,23 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
     [channel, isConnected, username]
   )
 
-  return { messages, sendMessage, isConnected }
+  const sendEmoji = useCallback(
+    (index: number) => {
+      if (!channel || !isConnected) return
+      if (index < 0 || index >= EMOJIS.length) return
+
+      channel.send({
+        type: 'broadcast',
+        event: EVENT_EMOJI_TYPE,
+        payload: new Uint8Array([index]).buffer,
+      })
+
+      pushReaction({ id: crypto.randomUUID(), index, createdAt: Date.now() })
+    },
+    [channel, isConnected, pushReaction]
+  )
+
+  const isBinaryCapable = supabase.realtime.vsn === '2.0.0'
+
+  return { messages, sendMessage, isConnected, reactions, sendEmoji, isBinaryCapable }
 }
