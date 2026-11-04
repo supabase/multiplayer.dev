@@ -33,7 +33,7 @@ const AvatarStack = ({
       className={cn(
         avatarStackVariants({ orientation }),
         className,
-        orientation === 'horizontal' ? '-space-x-0' : '-space-y-0'
+        orientation === 'horizontal' ? 'space-x-0' : 'space-y-0'
       )}
       {...props}
     >
@@ -42,7 +42,7 @@ const AvatarStack = ({
           <div
             key={index}
             className={[
-              'transition-all absolute right-0 h-8 w-8 bg-scale-1200 rounded-full bg-center bg-[length:50%_50%]',
+              'transition-all absolute right-0 h-8 w-8 bg-scale-1200 rounded-full bg-center bg-size-[50%_50%]',
               'bg-no-repeat shadow-md flex items-center justify-center',
             ].join(' ')}
             style={{ background: color }}
